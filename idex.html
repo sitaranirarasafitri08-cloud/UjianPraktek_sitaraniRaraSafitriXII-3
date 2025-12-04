@@ -1,0 +1,517 @@
+import React, { useState, useEffect } from 'react';
+import { BookOpen, HelpCircle, Brain, ArrowRight, ArrowLeft, Home, RefreshCcw, Check, X, Star } from 'lucide-react';
+
+// --- DATA: 4 MAPEL x 10 ITEM (BELAJAR & KUIS) + 10 TEKA-TEKI ---
+
+const dataMapel = {
+  matematika: {
+    materi: [
+      "Rumus Luas Persegi: Sisi x Sisi (s²).",
+      "Rumus Keliling Lingkaran: 2 x π x r atau π x d.",
+      "Teorema Pythagoras: a² + b² = c² (pada segitiga siku-siku).",
+      "Bilangan Prima: Bilangan yang hanya bisa dibagi 1 dan dirinya sendiri (2, 3, 5, 7...).",
+      "Akar kuadrat dari 144 adalah 12.",
+      "Sudut siku-siku besarnya 90 derajat.",
+      "Rumus Volume Kubus: Sisi x Sisi x Sisi (s³).",
+      "Pecahan Desimal: 1/4 sama dengan 0,25.",
+      "Bilangan Bulat: Terdiri dari bilangan positif, nol, dan negatif.",
+      "FPB (Faktor Persekutuan Terbesar) dari 12 dan 16 adalah 4."
+    ],
+    kuis: [
+      { q: "Berapa hasil dari 7 x 8?", options: ["54", "56", "58", "62"], a: 1 },
+      { q: "Apa rumus luas segitiga?", options: ["p x l", "s x s", "1/2 x a x t", "2 x π x r"], a: 2 },
+      { q: "Sudut yang besarnya kurang dari 90 derajat disebut...", options: ["Tumpul", "Siku-siku", "Lancip", "Refleks"], a: 2 },
+      { q: "Akar dari 81 adalah...", options: ["7", "8", "9", "11"], a: 2 },
+      { q: "Berapa sisi yang dimiliki heksagon?", options: ["5", "6", "7", "8"], a: 1 },
+      { q: "Nilai π (phi) kira-kira adalah...", options: ["3.14", "2.17", "4.5", "3.00"], a: 0 },
+      { q: "10 + (-5) = ...", options: ["15", "5", "-5", "-15"], a: 1 },
+      { q: "Bangun datar yang tidak memiliki sudut adalah...", options: ["Segitiga", "Persegi", "Lingkaran", "Trapesium"], a: 2 },
+      { q: "2 pangkat 3 (2³) adalah...", options: ["6", "8", "9", "12"], a: 1 },
+      { q: "Jika x + 5 = 12, berapakah x?", options: ["6", "7", "8", "5"], a: 1 }
+    ]
+  },
+  jepang: {
+    materi: [
+      "Ohayou Gozaimasu artinya Selamat Pagi.",
+      "Arigatou artinya Terima Kasih.",
+      "Watashi wa ... desu digunakan untuk memperkenalkan diri (Saya adalah...).",
+      "Sayounara artinya Selamat Tinggal.",
+      "Huruf dasar Jepang ada 3: Hiragana, Katakana, dan Kanji.",
+      "Ogenki desu ka? artinya Apa kabar?",
+      "Ichi, Ni, San adalah angka 1, 2, 3.",
+      "Sensei artinya Guru atau Dokter.",
+      "Gomen nasai artinya Maaf.",
+      "Itadakimasu diucapkan sebelum makan."
+    ],
+    kuis: [
+      { q: "Apa arti 'Konnichiwa'?", options: ["Selamat Pagi", "Selamat Siang", "Selamat Malam", "Terima Kasih"], a: 1 },
+      { q: "Angka 5 dalam bahasa Jepang adalah...", options: ["Yon", "Go", "Roku", "Nana"], a: 1 },
+      { q: "Huruf yang digunakan untuk kata serapan asing adalah...", options: ["Hiragana", "Katakana", "Kanji", "Romaji"], a: 1 },
+      { q: "'Mizu' (水) artinya...", options: ["Api", "Tanah", "Air", "Udara"], a: 2 },
+      { q: "Ucapan sebelum tidur adalah...", options: ["Oyasumi nasai", "Ohayou", "Kombanwa", "Itadakimasu"], a: 0 },
+      { q: "'Neko' artinya...", options: ["Anjing", "Kucing", "Burung", "Ikan"], a: 1 },
+      { q: "Apa arti 'Sumimasen'?", options: ["Halo", "Permisi/Maaf", "Selamat makan", "Bagus"], a: 1 },
+      { q: "'Hajimemashite' diucapkan saat...", options: ["Berpisah", "Bertemu pertama kali", "Makan", "Tidur"], a: 1 },
+      { q: "Warna 'Aka' adalah...", options: ["Biru", "Putih", "Merah", "Hitam"], a: 2 },
+      { q: "Bahasa Jepang dari 'Sekolah' adalah...", options: ["Gakkou", "Byouin", "Eki", "Toire"], a: 0 }
+    ]
+  },
+  akuntansi: {
+    materi: [
+      "Persamaan Dasar Akuntansi: Harta = Utang + Modal.",
+      "Debit: Sisi kiri akun. Kredit: Sisi kanan akun.",
+      "Harta (Aset) bertambah di Debit, berkurang di Kredit.",
+      "Utang (Liabilitas) bertambah di Kredit, berkurang di Debit.",
+      "Aktiva Lancar: Harta yang mudah dicairkan (Kas, Piutang).",
+      "Aktiva Tetap: Harta jangka panjang (Gedung, Mesin).",
+      "Neraca (Balance Sheet): Laporan posisi keuangan.",
+      "Laporan Laba Rugi: Menunjukkan pendapatan dan beban.",
+      "Prive: Pengambilan aset perusahaan untuk keperluan pribadi pemilik.",
+      "Jurnal Umum: Tempat mencatat transaksi pertama kali."
+    ],
+    kuis: [
+      { q: "Harta = ... + Modal", options: ["Kas", "Utang", "Beban", "Pendapatan"], a: 1 },
+      { q: "Jika Kas bertambah, dicatat di sisi...", options: ["Debit", "Kredit", "Saldo", "Modal"], a: 0 },
+      { q: "Yang TERMASUK Harta Lancar adalah...", options: ["Gedung", "Tanah", "Kas", "Kendaraan"], a: 2 },
+      { q: "Peralatan menyusut, beban penyusutan dicatat di...", options: ["Debit", "Kredit", "Utang", "Modal"], a: 0 },
+      { q: "Kewajiban perusahaan kepada pihak lain disebut...", options: ["Piutang", "Utang", "Modal", "Investasi"], a: 1 },
+      { q: "Laporan yang menunjukkan untung atau rugi disebut...", options: ["Neraca", "Laporan Laba Rugi", "Jurnal", "Buku Besar"], a: 1 },
+      { q: "Pengambilan pribadi pemilik disebut...", options: ["Modal", "Investasi", "Prive", "Dividen"], a: 2 },
+      { q: "Modal bertambah disebelah...", options: ["Debit", "Kredit", "Kiri", "Atas"], a: 1 },
+      { q: "Bukti transaksi penjualan tunai adalah...", options: ["Faktur", "Nota Kontan", "Kwitansi", "Cek"], a: 1 },
+      { q: "Akun 'Beban Gaji' bertambah di sisi...", options: ["Debit", "Kredit", "Pasiva", "Ekuitas"], a: 0 }
+    ]
+  },
+  indonesia: {
+    materi: [
+      "SPOK: Subjek, Predikat, Objek, Keterangan.",
+      "Majas Hiperbola: Gaya bahasa yang melebih-lebihkan.",
+      "Sinonim: Persamaan kata. Antonim: Lawan kata.",
+      "Paragraf Deduktif: Kalimat utama di awal paragraf.",
+      "Paragraf Induktif: Kalimat utama di akhir paragraf.",
+      "Pantun: Puisi lama, bersajak a-b-a-b.",
+      "Kata Baku: Kata yang sesuai dengan EYD/PUEBI.",
+      "Imbuhan 'Me-' jika bertemu k, t, s, p akan luluh (contoh: menyapu).",
+      "Kalimat Efektif: Kalimat yang hemat kata dan jelas maknanya.",
+      "Peribahasa 'Besar pasak daripada tiang' artinya pengeluaran lebih besar dari pendapatan."
+    ],
+    kuis: [
+      { q: "Lawan kata (Antonim) dari 'Panjang' adalah...", options: ["Tinggi", "Pendek", "Luas", "Lebar"], a: 1 },
+      { q: "Majas yang benda mati seolah hidup disebut...", options: ["Hiperbola", "Personifikasi", "Metafora", "Litotes"], a: 1 },
+      { q: "Kalimat utama di awal paragraf disebut paragraf...", options: ["Induktif", "Deduktif", "Campuran", "Naratif"], a: 1 },
+      { q: "Penulisan kata baku yang benar adalah...", options: ["Apotik", "Apotek", "Athlet", "Nasehat"], a: 1 },
+      { q: "Persamaan kata (Sinonim) 'Bohong' adalah...", options: ["Jujur", "Dusta", "Fakta", "Nyata"], a: 1 },
+      { q: "'Tong kosong nyaring bunyinya' adalah contoh...", options: ["Puisi", "Pantun", "Peribahasa", "Majas"], a: 2 },
+      { q: "Imbuhan 'Me-' + 'Tulis' menjadi...", options: ["Mentulis", "Menulis", "Metulis", "Mengtulis"], a: 1 },
+      { q: "Tokoh jahat dalam cerita disebut...", options: ["Protagonis", "Antagonis", "Tritagonis", "Figuran"], a: 1 },
+      { q: "Gagasan utama dalam sebuah paragraf disebut...", options: ["Ide pokok", "Kalimat penjelas", "Judul", "Tema"], a: 0 },
+      { q: "Sajak pantun biasanya berakhiran...", options: ["a-a-a-a", "a-b-a-b", "b-b-a-a", "a-b-b-a"], a: 1 }
+    ]
+  }
+};
+
+const tekaTekiData = [
+  { q: "Aku punya kaki, tapi tak bisa berjalan. Apakah aku?", a: "Meja" },
+  { q: "Semakin banyak kau ambil, semakin besar aku. Apakah aku?", a: "Lubang" },
+  { q: "Aku selalu datang, tapi tidak pernah tiba. Siapakah aku?", a: "Besok" },
+  { q: "Apa yang naik tapi tidak pernah turun?", a: "Umur" },
+  { q: "Punya gigi banyak, tapi tidak bisa menggigit?", a: "Sisir" },
+  { q: "Aku ringan seperti bulu, tapi orang terkuat pun tak bisa menahanku lama-lama.", a: "Napas" },
+  { q: "Apa yang harus dipecahkan sebelum bisa digunakan?", a: "Telur" },
+  { q: "Bulan apa yang orang tidur paling sedikit?", a: "Bulan Puasa (atau bisa dijawab Februari karena harinya paling sedikit)" },
+  { q: "Apa yang punya leher tapi tidak punya kepala?", a: "Baju / Botol" },
+  { q: "Benda apa yang jika dijemur malah basah?", a: "Es Batu" }
+];
+
+// --- COMPONENTS ---
+
+// 1. Bibble Mascot Icon (SVG)
+const BibbleMascot = ({ mood = "happy", size = "w-24 h-24" }) => {
+  return (
+    <div className={`${size} relative animate-bounce-slow`}>
+      <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-lg">
+        {/* Body - Fluffy Teal/Purple Gradient */}
+        <defs>
+          <linearGradient id="bibbleBody" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#2dd4bf" /> {/* Teal-400 */}
+            <stop offset="100%" stopColor="#a855f7" /> {/* Purple-500 */}
+          </linearGradient>
+        </defs>
+        <path d="M50,100 C50,50 150,50 150,100 C160,110 170,140 150,160 C130,180 70,180 50,160 C30,140 40,110 50,100 Z" fill="url(#bibbleBody)" />
+        
+        {/* Ears/Wings */}
+        <ellipse cx="40" cy="80" rx="15" ry="25" fill="#d8b4fe" transform="rotate(-30 40 80)" />
+        <ellipse cx="160" cy="80" rx="15" ry="25" fill="#d8b4fe" transform="rotate(30 160 80)" />
+
+        {/* Face */}
+        <circle cx="80" cy="110" r="5" fill="black" />
+        <circle cx="120" cy="110" r="5" fill="black" />
+        
+        {/* Mouth */}
+        {mood === "happy" && <path d="M90,125 Q100,135 110,125" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" />}
+        {mood === "surprised" && <circle cx="100" cy="130" r="5" fill="black" />}
+        {mood === "sad" && <path d="M90,130 Q100,120 110,130" fill="none" stroke="black" strokeWidth="3" strokeLinecap="round" />}
+
+        {/* Cheeks */}
+        <circle cx="70" cy="120" r="7" fill="#f472b6" opacity="0.6" />
+        <circle cx="130" cy="120" r="7" fill="#f472b6" opacity="0.6" />
+
+        {/* Antenna */}
+        <path d="M100,50 Q90,30 80,40" fill="none" stroke="#2dd4bf" strokeWidth="4" />
+        <path d="M100,50 Q110,30 120,40" fill="none" stroke="#2dd4bf" strokeWidth="4" />
+        <circle cx="80" cy="40" r="4" fill="#a855f7" />
+        <circle cx="120" cy="40" r="4" fill="#a855f7" />
+      </svg>
+    </div>
+  );
+};
+
+const Button = ({ children, onClick, colorClass, className }) => (
+  <button 
+    onClick={onClick} 
+    className={`${colorClass || 'bg-white text-teal-600'} ${className} font-bold py-3 px-6 rounded-2xl shadow-[0_4px_0_rgb(0,0,0,0.1)] active:shadow-[0_2px_0_rgb(0,0,0,0.1)] active:translate-y-1 transition-all border-2 border-white/20`}
+  >
+    {children}
+  </button>
+);
+
+const Card = ({ children, className }) => (
+  <div className={`bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border-4 border-white ${className}`}>
+    {children}
+  </div>
+);
+
+export default function RaraStudyApp() {
+  const [screen, setScreen] = useState('home'); // home, menu_belajar, menu_kuis, session_belajar, session_kuis, teka_teki
+  const [subject, setSubject] = useState(null);
+  const [index, setIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [quizFinished, setQuizFinished] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(null);
+
+  // Reset state helper
+  const resetSession = () => {
+    setIndex(0);
+    setScore(0);
+    setShowAnswer(false);
+    setQuizFinished(false);
+    setSelectedOption(null);
+  };
+
+  const startBelajar = (subj) => {
+    setSubject(subj);
+    setScreen('session_belajar');
+    resetSession();
+  };
+
+  const startKuis = (subj) => {
+    setSubject(subj);
+    setScreen('session_kuis');
+    resetSession();
+  };
+
+  const handleQuizAnswer = (optionIndex) => {
+    if (selectedOption !== null) return; // Prevent double click
+    
+    setSelectedOption(optionIndex);
+    const correct = dataMapel[subject].kuis[index].a === optionIndex;
+    if (correct) setScore(s => s + 10);
+
+    setTimeout(() => {
+      if (index < 9) {
+        setIndex(i => i + 1);
+        setSelectedOption(null);
+      } else {
+        setQuizFinished(true);
+      }
+    }, 1200);
+  };
+
+  // --- RENDERING SCREENS ---
+
+  // 1. HOME SCREEN
+  if (screen === 'home') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-teal-400 via-purple-400 to-pink-300 flex flex-col items-center justify-center p-4 font-sans text-slate-800">
+        <div className="animate-float mb-4">
+          <BibbleMascot mood="happy" size="w-40 h-40" />
+        </div>
+        <h1 className="text-5xl font-extrabold text-white drop-shadow-md mb-2 tracking-wide font-comic">RaraStudy</h1>
+        <p className="text-white text-lg font-medium mb-8 bg-white/20 px-4 py-1 rounded-full">Belajar bareng Bibble yuk!</p>
+        
+        <div className="flex flex-col gap-4 w-full max-w-xs">
+          <Button onClick={() => setScreen('menu_belajar')} colorClass="bg-teal-100 text-teal-700 hover:bg-teal-50">
+            <div className="flex items-center justify-center gap-2"><BookOpen size={20}/> Mulai Belajar</div>
+          </Button>
+          <Button onClick={() => setScreen('menu_kuis')} colorClass="bg-purple-100 text-purple-700 hover:bg-purple-50">
+            <div className="flex items-center justify-center gap-2"><Brain size={20}/> Kuis Seru</div>
+          </Button>
+          <Button onClick={() => {setScreen('teka_teki'); resetSession();}} colorClass="bg-pink-100 text-pink-700 hover:bg-pink-50">
+            <div className="flex items-center justify-center gap-2"><HelpCircle size={20}/> Teka-Teki</div>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. MENU SELECTION (BELAJAR / KUIS)
+  if (screen === 'menu_belajar' || screen === 'menu_kuis') {
+    const isKuis = screen === 'menu_kuis';
+    const title = isKuis ? "Pilih Mapel Kuis" : "Pilih Materi Belajar";
+    const bgIcon = isKuis ? <Brain className="text-purple-200 w-32 h-32 absolute top-10 right-10 opacity-50"/> : <BookOpen className="text-teal-200 w-32 h-32 absolute top-10 left-10 opacity-50"/>;
+
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-indigo-400 to-purple-300 p-6 relative overflow-hidden flex flex-col items-center">
+        {bgIcon}
+        <div className="z-10 w-full max-w-md">
+            <div className="flex items-center mb-8">
+                <button onClick={() => setScreen('home')} className="bg-white/30 p-2 rounded-full text-white hover:bg-white/50 transition"><Home size={24}/></button>
+                <h2 className="text-3xl font-bold text-white ml-4 flex-1 text-center mr-8">{title}</h2>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+            {Object.keys(dataMapel).map((key) => (
+                <button 
+                key={key}
+                onClick={() => isKuis ? startKuis(key) : startBelajar(key)}
+                className="bg-white hover:scale-105 transition transform rounded-2xl p-6 flex flex-col items-center justify-center shadow-lg aspect-square"
+                >
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center mb-3 ${
+                    key === 'matematika' ? 'bg-blue-100 text-blue-600' :
+                    key === 'jepang' ? 'bg-red-100 text-red-600' :
+                    key === 'akuntansi' ? 'bg-green-100 text-green-600' :
+                    'bg-orange-100 text-orange-600'
+                }`}>
+                    {key === 'matematika' && <span className="text-2xl font-bold">∑</span>}
+                    {key === 'jepang' && <span className="text-2xl font-bold">あ</span>}
+                    {key === 'akuntansi' && <span className="text-2xl font-bold">$</span>}
+                    {key === 'indonesia' && <span className="text-2xl font-bold">A</span>}
+                </div>
+                <span className="font-bold text-slate-700 capitalize">{key}</span>
+                </button>
+            ))}
+            </div>
+            
+            <div className="mt-8 flex justify-center">
+                <BibbleMascot mood="happy" size="w-20 h-20" />
+            </div>
+            <div className="bg-white/20 text-white text-center p-3 rounded-xl mt-2 backdrop-blur-md">
+                "Pilih satu ya! Semangat!"
+            </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. SESSION BELAJAR (FLASHCARD STYLE)
+  if (screen === 'session_belajar') {
+    const currentMateri = dataMapel[subject].materi[index];
+
+    return (
+      <div className="min-h-screen bg-teal-500 flex flex-col items-center justify-center p-6">
+        <div className="w-full max-w-md">
+            <div className="flex justify-between items-center mb-6 text-white">
+                <button onClick={() => setScreen('menu_belajar')} className="flex items-center gap-1 font-bold"><ArrowLeft/> Kembali</button>
+                <span className="bg-white/20 px-3 py-1 rounded-full font-mono">{index + 1} / 10</span>
+            </div>
+
+            <Card className="min-h-[300px] flex flex-col items-center justify-center text-center relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-teal-400 to-purple-400"></div>
+                <h3 className="text-xl font-bold text-teal-600 mb-2 capitalize tracking-widest">{subject}</h3>
+                <p className="text-2xl font-medium text-slate-800 leading-relaxed px-4">
+                    {currentMateri}
+                </p>
+                <div className="absolute bottom-4 right-4 opacity-20">
+                    <BibbleMascot mood="happy" size="w-16 h-16"/>
+                </div>
+            </Card>
+
+            <div className="flex justify-between mt-8 gap-4">
+                <Button 
+                    onClick={() => setIndex(Math.max(0, index - 1))} 
+                    className={`flex-1 ${index === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                    Sebelumnya
+                </Button>
+                <Button 
+                    onClick={() => index < 9 ? setIndex(index + 1) : setScreen('menu_belajar')} 
+                    colorClass="bg-purple-500 text-white hover:bg-purple-600 border-purple-400"
+                    className="flex-1"
+                >
+                    {index < 9 ? 'Lanjut' : 'Selesai'}
+                </Button>
+            </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 4. SESSION KUIS
+  if (screen === 'session_kuis') {
+    if (quizFinished) {
+      // RESULT SCREEN
+      const isPerfect = score === 100;
+      const isGood = score >= 70;
+      
+      return (
+        <div className="min-h-screen bg-purple-500 flex flex-col items-center justify-center p-6 text-center">
+             <div className="bg-white rounded-3xl p-8 w-full max-w-md shadow-2xl flex flex-col items-center animate-pop">
+                <BibbleMascot mood={isGood ? "happy" : "surprised"} size="w-32 h-32 mb-4" />
+                <h2 className="text-3xl font-bold text-slate-800 mb-2">{isPerfect ? "Sempurna!" : isGood ? "Hebat!" : "Ayo Coba Lagi!"}</h2>
+                <div className="text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-teal-500 to-purple-600 mb-4">
+                    {score}
+                </div>
+                <p className="text-slate-500 mb-6">Kamu menjawab {score/10} dari 10 soal dengan benar di mapel {subject}.</p>
+                
+                <div className="flex flex-col gap-3 w-full">
+                    <Button onClick={() => startKuis(subject)} colorClass="bg-teal-100 text-teal-700">
+                        <div className="flex items-center justify-center gap-2"><RefreshCcw size={18}/> Ulangi Kuis</div>
+                    </Button>
+                    <Button onClick={() => setScreen('home')} colorClass="bg-slate-100 text-slate-700">
+                        Ke Menu Utama
+                    </Button>
+                </div>
+             </div>
+        </div>
+      );
+    }
+
+    // QUESTION SCREEN
+    const currentQ = dataMapel[subject].kuis[index];
+    
+    return (
+      <div className="min-h-screen bg-purple-600 flex flex-col items-center p-6">
+        <div className="w-full max-w-md mt-4">
+            <div className="flex justify-between items-center mb-6 text-white">
+                <button onClick={() => setScreen('menu_kuis')} className="opacity-80 hover:opacity-100"><X/></button>
+                <div className="flex flex-col items-end">
+                    <span className="text-xs opacity-70">Soal</span>
+                    <span className="font-bold text-xl">{index + 1}/10</span>
+                </div>
+            </div>
+
+            <div className="mb-6">
+                <div className="bg-white rounded-2xl p-6 min-h-[120px] flex items-center justify-center shadow-lg relative">
+                    <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-purple-200 text-purple-800 px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+                        {subject}
+                    </div>
+                    <p className="text-xl font-bold text-center text-slate-800">{currentQ.q}</p>
+                </div>
+            </div>
+
+            <div className="grid gap-3">
+                {currentQ.options.map((opt, i) => {
+                    let btnColor = "bg-white text-slate-700 hover:bg-slate-50";
+                    if (selectedOption !== null) {
+                        if (i === currentQ.a) btnColor = "bg-green-400 text-white border-green-500";
+                        else if (i === selectedOption) btnColor = "bg-red-400 text-white border-red-500";
+                        else btnColor = "bg-slate-200 text-slate-400 opacity-50";
+                    }
+
+                    return (
+                        <button
+                            key={i}
+                            disabled={selectedOption !== null}
+                            onClick={() => handleQuizAnswer(i)}
+                            className={`${btnColor} font-bold py-4 px-6 rounded-xl transition-all shadow-sm text-left flex justify-between items-center border-b-4 border-transparent`}
+                        >
+                            <span>{opt}</span>
+                            {selectedOption !== null && i === currentQ.a && <Check size={20}/>}
+                            {selectedOption === i && i !== currentQ.a && <X size={20}/>}
+                        </button>
+                    )
+                })}
+            </div>
+
+            {selectedOption !== null && (
+                <div className="mt-6 flex justify-center animate-bounce">
+                    <div className="bg-white/20 backdrop-blur text-white px-4 py-2 rounded-full flex items-center gap-2">
+                        <BibbleMascot mood="happy" size="w-8 h-8"/>
+                        <span>{selectedOption === currentQ.a ? "Yippee! Benar!" : "Yah, salah..."}</span>
+                    </div>
+                </div>
+            )}
+        </div>
+      </div>
+    );
+  }
+
+  // 5. TEKA-TEKI SCREEN
+  if (screen === 'teka_teki') {
+    const puzzle = tekaTekiData[index];
+
+    return (
+      <div className="min-h-screen bg-pink-400 flex flex-col items-center p-6 relative">
+         <div className="w-full max-w-md z-10">
+            <div className="flex items-center mb-8 text-white">
+                <button onClick={() => setScreen('home')} className="bg-white/20 p-2 rounded-full hover:bg-white/30"><ArrowLeft/></button>
+                <h2 className="text-2xl font-bold ml-4">Teka-Teki Bibble</h2>
+            </div>
+
+            <Card className="mb-6 min-h-[250px] flex flex-col justify-center items-center text-center">
+                <div className="mb-4 text-pink-500">
+                    <HelpCircle size={48} />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-4 px-2">{puzzle.q}</h3>
+                
+                {showAnswer ? (
+                    <div className="animate-fade-in bg-teal-100 text-teal-800 px-6 py-3 rounded-xl font-bold text-lg border-2 border-teal-200">
+                        {puzzle.a}
+                    </div>
+                ) : (
+                    <button 
+                        onClick={() => setShowAnswer(true)}
+                        className="text-pink-500 underline font-bold hover:text-pink-600"
+                    >
+                        Lihat Jawaban
+                    </button>
+                )}
+            </Card>
+
+            <div className="flex justify-between items-center bg-white/10 p-4 rounded-2xl backdrop-blur-md">
+                <button 
+                    onClick={() => {
+                        if(index > 0) {
+                            setIndex(i => i - 1);
+                            setShowAnswer(false);
+                        }
+                    }}
+                    className={`p-3 rounded-full bg-white text-pink-500 ${index === 0 ? 'opacity-50' : 'hover:scale-110'}`}
+                >
+                    <ArrowLeft/>
+                </button>
+                
+                <BibbleMascot mood={showAnswer ? "surprised" : "happy"} size="w-20 h-20" />
+                
+                <button 
+                    onClick={() => {
+                        if(index < tekaTekiData.length - 1) {
+                            setIndex(i => i + 1);
+                            setShowAnswer(false);
+                        } else {
+                            setScreen('home');
+                        }
+                    }}
+                    className="p-3 rounded-full bg-white text-pink-500 hover:scale-110 transition"
+                >
+                   {index < tekaTekiData.length - 1 ? <ArrowRight/> : <Home/>}
+                </button>
+            </div>
+            
+            <p className="text-white text-center mt-4 opacity-80 text-sm">Teka-teki {index + 1} dari 10</p>
+         </div>
+         
+         {/* Background Decoration */}
+         <div className="absolute top-20 right-[-50px] opacity-20 rotate-12">
+            <Star size={200} fill="white" />
+         </div>
+         <div className="absolute bottom-20 left-[-50px] opacity-20 -rotate-12">
+            <Star size={150} fill="white" />
+         </div>
+      </div>
+    );
+  }
+
+  return null;
+}
